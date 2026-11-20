@@ -20,29 +20,54 @@ check_type = st.radio(
     ("전체 보기", "작업자(사람) 중심", "시설물/환경 중심", "장비/기계 중심")
 )
 
-# 4. 사진 업로드 및 📷 카메라 촬영 기능 (여기부터 수정되었습니다!)
+# 4. 사진 업로드 및 📷 카메라 촬영 기능
 uploaded_file = st.file_uploader("갤러리에서 사진 올리기 (jpg, png)", type=["jpg", "png", "jpeg"])
-camera_photo = st.camera_input("📸 모바일에서 바로 사진 찍기")
+
+# 카메라 켜기 체크박스
+use_camera = st.checkbox("📷 카메라 켜기 (사진을 찍으려면 체크하세요)")
+
+camera_image = None
+# 체크박스에 체크가 되었을 때만 카메라 활성화
+if use_camera:
+    camera_image = st.camera_input("카메라로 사진 찍기")
 
 # 두 가지(업로드 또는 촬영) 중 하나라도 사진이 들어오면 분석할 이미지로 지정
 image_to_analyze = None
-if camera_photo is not None:
-    image_to_analyze = camera_photo
+# (오류 수정됨: camera_photo -> camera_image)
+if camera_image is not None:
+    image_to_analyze = camera_image
 elif uploaded_file is not None:
     image_to_analyze = uploaded_file
 
 # 사진이 준비되었을 때만 아래 코드 실행
 if image_to_analyze is not None:
-    # 화면에 올린/찍은 사진 보여주기
+    # 1. 우선 이미지를 엽니다.
     image = Image.open(image_to_analyze)
-    st.image(image, caption="분석할 사진입니다.", use_container_width=True)
+    
+    # 2. 🔄 사진 회전 기능 (새로 추가된 부분)
+    st.write("---")
+    rotation = st.radio(
+        "🔄 사진 방향이 누워있다면 올바르게 회전시켜 주세요:",
+        ["그대로", "오른쪽으로 90도", "180도 (뒤집기)", "왼쪽으로 90도"],
+        horizontal=True
+    )
+    
+    # 사용자가 선택한 값에 따라 이미지 회전 처리
+    if rotation == "오른쪽으로 90도":
+        image = image.rotate(-90, expand=True)
+    elif rotation == "180도 (뒤집기)":
+        image = image.rotate(180, expand=True)
+    elif rotation == "왼쪽으로 90도":
+        image = image.rotate(90, expand=True)
+
+    # 3. 회전이 완료된 사진을 화면에 보여주기
+    st.image(image, caption="분석할 사진 (이 방향으로 AI가 분석합니다)", use_container_width=True)
     
     if st.button("🚨 위험 포인트 분석하기"):
         # 로딩 중 텍스트에 사용자가 선택한 분야를 표시합니다.
         with st.spinner(f"구글 AI가 '{check_type}' 위주로 사진을 분석 중입니다..."):
             try:
-                # 5. AI에게 내릴 '명령어(프롬프트)' 작성
-                # f""" """ 를 사용해 중괄호 {} 안에 사용자가 선택한 check_type이 들어가게 했습니다.
+                # 4. AI에게 내릴 '명령어(프롬프트)' 작성
                 prompt = f"""
                 당신은 산업 안전 전문가입니다. 첨부된 사진을 보고 위험 요소를 분석해 주세요. 
                 특히 이번 분석에서는 [{check_type}]에 중점을 두고 꼼꼼하게 확인해야 합니다.
@@ -59,10 +84,10 @@ if image_to_analyze is not None:
                 - 해결책: (즉시 취해야 할 행동)
                 """
                 
-                # 6. AI에게 사진과 명령어를 보내고 답변 받기
+                # 5. AI에게 명령어와 '회전이 완료된 사진(image)'을 보내고 답변 받기
                 response = model.generate_content([prompt, image])
                 
-                # 7. AI가 준 답변을 화면에 예쁘게 출력하기
+                # 6. AI가 준 답변을 화면에 예쁘게 출력하기
                 st.success("✅ 분석이 완료되었습니다!")
                 st.markdown(response.text)
                 
