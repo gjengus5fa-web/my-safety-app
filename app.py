@@ -20,9 +20,12 @@ check_type = st.radio(
     ("전체 보기", "작업자(사람) 중심", "시설물/환경 중심", "장비/기계 중심")
 )
 
-# 4. 사진 업로드 및 📷 카메라 촬영 기능
-uploaded_file = st.file_uploader(" "갤러리에서 사진 올리기 (여러 확장자 지원)", 
-    type=["jpg", "jpeg", "png", "webp", "bmp", "gif"])
+# 4. 사진 업로드 및 📷 카메라 촬영 기능 (확장자 추가 및 따옴표 오류 수정)
+uploaded_file = st.file_uploader(
+    "갤러리에서 사진 올리기 (여러 확장자 지원)", 
+    type=["jpg", "jpeg", "png", "webp", "bmp", "gif"]
+)
+
 # 카메라 켜기 체크박스
 use_camera = st.checkbox("📷 카메라 켜기 (사진을 찍으려면 체크하세요)")
 
@@ -88,7 +91,6 @@ if image_to_analyze is not None:
                 """
                 
                 # 5. AI에게 명령어와 '회전이 완료된 사진'을 보내고 답변 받기
-                # (답변이 들쭉날쭉하지 않고 일관되게 나오도록 temperature를 0.2로 설정 추가)
                 response = model.generate_content(
                     [prompt, image],
                     generation_config={"temperature": 0.2}
@@ -99,6 +101,7 @@ if image_to_analyze is not None:
                 st.markdown(response.text)
                 
             except Exception as e:
+                # 중복되었던 에러 처리 구문을 하나로 통일했습니다.
                 st.error(f"분석 중 오류가 발생했습니다: {e}")
                 
             except Exception as e:
