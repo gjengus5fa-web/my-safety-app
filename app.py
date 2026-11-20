@@ -7,8 +7,8 @@ from PIL import Image
 API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 
-# 2. AI 모델 선택 (3.8은 존재하지 않아 가장 빠르고 정확한 1.5-flash로 수정함)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# 2. AI 모델 선택 
+model = genai.GenerativeModel('gemini-3.8-flash')
 
 # 3. 앱 화면 구성 시작
 st.title("👷‍♂️ 찰칵! AI 안전 지킴이 (무료 버전)")
