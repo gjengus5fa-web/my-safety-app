@@ -101,4 +101,4 @@ if image_to_analyze is not None:
                 st.write_stream((chunk.text for chunk in response))
                 
             except Exception as e:
-                st.error(f"분석 중 오류가 발생했습니다: {e}"
+                st.error(f"분석 중 오류가 발생했습니다: {e}")
