@@ -20,7 +20,7 @@ check_type = st.radio(
     ("전체 보기", "작업자(사람) 중심", "시설물/환경 중심", "장비/기계 중심")
 )
 
-# 4. 사진 업로드 및 📷 카메라 촬영 기능 (확장자 추가 및 따옴표 오류 수정)
+# 4. 사진 업로드 및 📷 카메라 촬영 기능
 uploaded_file = st.file_uploader(
     "갤러리에서 사진 올리기 (여러 확장자 지원)", 
     type=["jpg", "jpeg", "png", "webp", "bmp", "gif"]
@@ -69,6 +69,10 @@ if image_to_analyze is not None:
         # 로딩 중 텍스트에 사용자가 선택한 분야를 표시합니다.
         with st.spinner(f"구글 AI가 '{check_type}' 위주로 사진을 분석 중입니다..."):
             try:
+                # [속도 개선 1] AI에게 보내기 전에 이미지 용량 줄이기 (최대 가로세로 1024픽셀로 리사이징)
+                # 원본 사진의 화질이 너무 크면 전송이 오래 걸리므로 적절히 줄여줍니다.
+                image.thumbnail((1024, 1024))
+
                 # 4. AI에게 내릴 '명령어(프롬프트)' 작성 (상세한 건설 현장 양식 적용)
                 prompt = f"""
                 당신은 베테랑 건설 현장 안전 관리자입니다. 주어진 사진을 꼼꼼하게 분석하고, 반드시 아래 제공된 4가지 목차와 형식에 맞추어 아주 상세하게 보고서를 작성해 주세요. 
@@ -90,19 +94,19 @@ if image_to_analyze is not None:
                 - 사고를 막기 위해 지금 당장 현장에서 취해야 할 즉각적인 행동과, 앞으로 지켜야 할 근본적인 안전 수칙을 2가지 이상 제안해 주세요.
                 """
                 
-                # 5. AI에게 명령어와 '회전이 완료된 사진'을 보내고 답변 받기
+                # [속도 개선 2] stream=True 옵션을 켜서 답변을 실시간으로 받아오기
                 response = model.generate_content(
                     [prompt, image],
-                    generation_config={"temperature": 0.2}
+                    generation_config={"temperature": 0.2},
+                    stream=True
                 )
                 
-                # 6. AI가 준 답변을 화면에 예쁘게 출력하기
-                st.success("✅ 분석이 완료되었습니다!")
-                st.markdown(response.text)
+                # 6. AI가 준 답변을 화면에 타자 치듯 실시간 출력하기
+                st.success("✅ 분석 완료! (답변을 작성 중입니다...)")
+                
+                # 실시간 텍스트 출력을 위해 제너레이터 형태로 전달
+                st.write_stream((chunk.text for chunk in response))
                 
             except Exception as e:
                 # 중복되었던 에러 처리 구문을 하나로 통일했습니다.
                 st.error(f"분석 중 오류가 발생했습니다: {e}")
-                
-            except Exception as e:
-                st.error(f"오류가 발생했습니다: {e}")
