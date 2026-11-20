@@ -21,8 +21,8 @@ check_type = st.radio(
 )
 
 # 4. 사진 업로드 및 📷 카메라 촬영 기능
-uploaded_file = st.file_uploader("갤러리에서 사진 올리기 (jpg, png)", type=["jpg", "png", "jpeg"])
-
+uploaded_file = st.file_uploader(" "갤러리에서 사진 올리기 (여러 확장자 지원)", 
+    type=["jpg", "jpeg", "png", "webp", "bmp", "gif"])
 # 카메라 켜기 체크박스
 use_camera = st.checkbox("📷 카메라 켜기 (사진을 찍으려면 체크하세요)")
 
