@@ -8,28 +8,7 @@ API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 
 # 2. AI 모델 선택 
-try:
-    # 현재 API 키로 사용 가능한 전체 모델 목록을 불러옵니다.
-    valid_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    
-    # 목록 중에서 빠르고 저렴한 'flash' 모델만 찾아냅니다.
-    flash_models = [name for name in valid_models if 'flash' in name]
-    
-    # flash 모델이 존재하면 가장 첫 번째 것을, 없으면 사용 가능한 아무 모델이나 선택합니다.
-    if flash_models:
-        target_model_name = flash_models[0]
-    elif valid_models:
-        target_model_name = valid_models[0]
-    else:
-        target_model_name = 'gemini-pro' # 최후의 기본값
-        
-    model = genai.GenerativeModel(target_model_name)
-    
-    # 화면에 현재 연결된 모델이 무엇인지 표시해 줍니다.
-    st.info(f"💡 현재 연결된 AI 모델: {target_model_name}")
-
-except Exception as e:
-    st.error(f"모델 목록을 불러오는 중 오류가 발생했습니다: {e}")
+model = genai.GenerativeModel('gemini-3.8-flash')
 
 # 3. 앱 화면 구성 시작
 st.title("👷‍♂️ 찰칵! AI 안전 지킴이 (무료 버전)")
